@@ -6,15 +6,14 @@ and incorporates them into the game as defined. */
 
 public class ImportSprite : EditorWindow {
 
-    // Get access to the different types of thing to deal with
-    ImportHead importHead = new ImportHead();
-
+    // Get access to the different scripts for things to deal with
+    ImportBodyPart importBodyPart = new ImportBodyPart();
 
     // Default path used to take in files
-    string path = "Assets/SpritesAll";
+    string path = "Assets/NathRaws";
 
     // Creates a toolbar, when selected implicitly calls ShowWindow()
-    [MenuItem("DansCustomTools/ImportNathSprites")]
+    [MenuItem("DansCustomTools/ImportNathRaws")]
     private static void ShowWindow()
     {
         // Creates the main window, implicitly takes the content from OnGUI()
@@ -40,27 +39,27 @@ public class ImportSprite : EditorWindow {
     // Use the TextureImporter to modify the texture to the correct settings
     private void ModTexture()
     {
+
+        // Build the Processed folder if not there
+        if (!AssetDatabase.IsValidFolder("Assets/GameAssets"))
+        {
+            AssetDatabase.CreateFolder("Assets", "GameAssets");
+        }
+
         // Get all of the textures in the path folder
         string[] allTextures = AssetDatabase.FindAssets("t:texture2D", new[] {path});
 
         // For each texture selected this way make the default changes
         foreach (string newTexture in allTextures)
         {
+            // If the first word of the file is a bodypart, then process accordingly
             string[] parsedWords = parseWords(newTexture);
-            if (parsedWords[0] == "head")
+            string[] bodyParts = {"head", "body", "handFront", "handBack"};
+            int pos = ArrayUtility.IndexOf(bodyParts, parsedWords[0]);
+            if (pos > -1)
             {
-                importHead.Process(newTexture, parsedWords);
+                importBodyPart.Process(newTexture, parsedWords);
             }
-            /*
-            else if (firstword == "body")
-            {
-                importBody.Process(newTexture);
-            }
-            else if (firstword == "hand")
-            {
-                importBody.Process(newTexture);
-            }
-            */
             else
             {
                 Debug.Log("NOT RECOGNISED: ALEEEEEEERRRTT");
