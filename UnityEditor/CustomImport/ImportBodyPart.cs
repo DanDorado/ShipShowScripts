@@ -93,9 +93,8 @@ public class ImportBodyPart {
             string assFolderMap = AssetDatabase.CreateFolder("Assets/GameAssets/Animations/" + parsedWords[0], parsedWords[1]);
         }
 
-        // Create a new animation and up it into an AnimatorController
+        // Create a new animation and mod the settings
         AnimationClip animation = new AnimationClip();
-        animation.wrapMode= WrapMode.Loop;
         animation.name = parsedWords[1] + "_" + parsedWords[2];
         animation.frameRate = framerate;
 
@@ -104,6 +103,12 @@ public class ImportBodyPart {
         spriteBinding.path = "";
         spriteBinding.propertyName = "m_Sprite"; 
 
+        // Explicitly mod the settings to access loop time
+        AnimationClipSettings animSettings = AnimationUtility.GetAnimationClipSettings(animation);
+        animSettings.loopTime = true;
+        AnimationUtility.SetAnimationClipSettings(animation, animSettings);
+
+        // Evenly space the sprite Keyframes at times depending on the framerate
         ObjectReferenceKeyframe[] spriteKeyFrames = new ObjectReferenceKeyframe[spritesToUse.Length];
         for(i = 0; i < (spritesToUse.Length); i++)
         {
@@ -112,7 +117,7 @@ public class ImportBodyPart {
             spriteKeyFrames[i].time = (timingi/framerate);
             spriteKeyFrames[i].value = spritesToUse[i];
         }
-        AnimationUtility.SetObjectReferenceCurve(animation, spriteBinding, spriteKeyFrames);
+        AnimationUtility.SetObjectReferenceCurve(animation, spriteBinding, spriteKeyFrames);    
 
         RuntimeAnimatorController controller = UnityEditor.Animations.AnimatorController.CreateAnimatorControllerAtPathWithClip("Assets/GameAssets/Animations/" + parsedWords[0] + "/" + parsedWords[1] + "/" + parsedWords[1] + "_" + parsedWords[2] + "_control.controller", animation);
         AssetDatabase.CreateAsset(animation, "Assets/GameAssets/Animations/" + parsedWords[0] + "/" + parsedWords[1] + "/" + parsedWords[1] + "_" + parsedWords[2] + "_anim.anim");
@@ -145,7 +150,28 @@ public class ImportBodyPart {
             string preFolderMap = AssetDatabase.CreateFolder("Assets/GameAssets/Prefabs/" + parsedWords[0], parsedWords[1]);
         }
 
-        PrefabUtility.SaveAsPrefabAssetAndConnect(objectToBuild, "Assets/GameAssets/Prefabs/" + parsedWords[0] + "/" + parsedWords[1] + "/" + parsedWords[0] + "_" + parsedWords[1] + "_" + parsedWords[2] + ".prefab", InteractionMode.UserAction);
+        // Attach bodypart Class labelling to component
+        switch (parsedWords[0])
+        {
+            case "head":
+                objectToBuild.AddComponent<Head>();
+                break;
+            case "body":
+                objectToBuild.AddComponent<Body>();
+                break;
+            case "handFront":
+                objectToBuild.AddComponent<HandFront>();
+                break;
+            case "handBack":
+                objectToBuild.AddComponent<HandBack>();
+                break;
+            default:
+                Debug.Log("NOT RECOGNISED: ALEEEEEEERRRTT");
+                break;
+        }
+
+
+        GameObject prefab = PrefabUtility.SaveAsPrefabAssetAndConnect(objectToBuild, "Assets/GameAssets/Prefabs/" + parsedWords[0] + "/" + parsedWords[1] + "/" + parsedWords[0] + "_" + parsedWords[1] + "_" + parsedWords[2] + ".prefab", InteractionMode.UserAction);
     
         // Remove the GameObject and Original Raws and leave the Prefab and processed files
         Undo.DestroyObjectImmediate(objectToBuild);
