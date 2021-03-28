@@ -8,6 +8,7 @@ public class ImportSprite : EditorWindow {
 
     // Get access to the different scripts for things to deal with
     ImportBodyPart importBodyPart = new ImportBodyPart();
+    // ImportShipPart importShipPart = new ImportShipPart();
 
     // Default path used to take in files
     string path = "Assets/NathRaws";
@@ -54,11 +55,22 @@ public class ImportSprite : EditorWindow {
         {
             // If the first word of the file is a bodypart, then process accordingly
             string[] parsedWords = parseWords(newTexture);
-            string[] bodyParts = {"head", "body", "handFront", "handBack"};
-            int pos = ArrayUtility.IndexOf(bodyParts, parsedWords[0]);
-            if (pos > -1)
+
+            importBodyPart.Process(newTexture, parsedWords);
+            string[] shipParts = {"engine", "balloon", "sail"};
+
+            if (parsedWords[0]=="Character")
             {
-                importBodyPart.Process(newTexture, parsedWords);
+                string[] bodyParts = {"backFx", "body", "handBack", "handFront", "hat", "head", "tool", "topFx"};
+                int bodyMatch = ArrayUtility.IndexOf(bodyParts, parsedWords[1]);
+                if (bodyMatch > -1)
+                {
+                    importBodyPart.Process(newTexture, parsedWords);
+                }
+                else
+                {
+                    Debug.Log("NOT RECOGNISED: ALEEEEEEERRRTT");
+                }
             }
             else
             {

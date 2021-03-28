@@ -5,8 +5,8 @@ using System.Collections.Generic;
 public class ImportBodyPart {
 
     //&&& Allow overwrite with specific head sizes
-    int spriteHeight = 50;
-    int spriteWidth = 70;
+
+    int spriteWidth = 67;
     int framerate = 15;
 
     // Access the Texture Importer, make necessary modifications and set up animations.
@@ -18,10 +18,10 @@ public class ImportBodyPart {
         importer.spriteImportMode = SpriteImportMode.Multiple;
         importer.filterMode = FilterMode.Point;
 
-
         // Figure out show many parts of the sprite sheet should exist, then split them up
         //&&& add debug check for no remainders
         Texture2D texture = (Texture2D)AssetDatabase.LoadAssetAtPath(texturePath, typeof(Texture2D));
+        int spriteHeight = texture.height;
         int colCount = texture.width / spriteWidth;
         int rowCount = texture.height / spriteHeight;
 
@@ -55,47 +55,54 @@ public class ImportBodyPart {
             } 
         }
 
-        //Move the Asset from the import folder into the Texture Folder
+        //Move the Asset from the import folder into the Texture Folder, building out folder if possible
 
-        if (!AssetDatabase.IsValidFolder("Assets/GameAssets/Textures"))
+        if (!AssetDatabase.IsValidFolder("Assets/GameAssets/Textures/" + parsedWords[0] + "/" + parsedWords[1] + "/" + parsedWords[2] + "/" + parsedWords[3]))
         {
-            AssetDatabase.CreateFolder("Assets/GameAssets", "Textures");
+            if (!AssetDatabase.IsValidFolder("Assets/GameAssets/Textures/" + parsedWords[0] + "/" + parsedWords[1] + "/" + parsedWords[2]))
+            { 
+                if (!AssetDatabase.IsValidFolder("Assets/GameAssets/Textures/" + parsedWords[0] + "/" + parsedWords[1]))
+                { 
+                    if (!AssetDatabase.IsValidFolder("Assets/GameAssets/Textures/" + parsedWords[0]))
+                    {
+                        if (!AssetDatabase.IsValidFolder("Assets/GameAssets/Textures"))
+                        {
+                            AssetDatabase.CreateFolder("Assets/GameAssets", "Textures");
+                        }
+                        AssetDatabase.CreateFolder("Assets/GameAssets/Textures", parsedWords[0]);
+                    }
+                    AssetDatabase.CreateFolder("Assets/GameAssets/Textures/" + parsedWords[0], parsedWords[1]);
+                }
+                AssetDatabase.CreateFolder("Assets/GameAssets/Textures/" + parsedWords[0] + "/" + parsedWords[1], parsedWords[2]);
+            }
+            AssetDatabase.CreateFolder("Assets/GameAssets/Textures/" + parsedWords[0] + "/" + parsedWords[1] + "/" + parsedWords[2], parsedWords[3]);
         }
 
-        if (!AssetDatabase.IsValidFolder("Assets/GameAssets/Textures/" + parsedWords[0]))
-        {
-            AssetDatabase.CreateFolder("Assets/GameAssets/Textures", parsedWords[0]);
-        }
+        AssetDatabase.MoveAsset(texturePath, "Assets/GameAssets/Textures/" + parsedWords[0] + "/" + parsedWords[1] + "/" + parsedWords[2] + "/" + parsedWords[3] + "/" + parsedWords[4] + ".png");
 
-        if (!AssetDatabase.IsValidFolder("Assets/GameAssets/Textures/" + parsedWords[0] + "/" + parsedWords[1]))
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%            GAP             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+        if (!AssetDatabase.IsValidFolder("Assets/GameAssets/Animations/" + parsedWords[0] + "/" + parsedWords[1] + "/" + parsedWords[2]))
         { 
-            string preFolderMap = AssetDatabase.CreateFolder("Assets/GameAssets/Textures/" + parsedWords[0], parsedWords[1]);
+            if (!AssetDatabase.IsValidFolder("Assets/GameAssets/Animations/" + parsedWords[0] + "/" + parsedWords[1]))
+            { 
+                if (!AssetDatabase.IsValidFolder("Assets/GameAssets/Animations/" + parsedWords[0]))
+                {
+                    if (!AssetDatabase.IsValidFolder("Assets/GameAssets/Animations"))
+                    {
+                        AssetDatabase.CreateFolder("Assets/GameAssets", "Animations");
+                    }
+                    AssetDatabase.CreateFolder("Assets/GameAssets/Animations", parsedWords[0]);
+                }
+                AssetDatabase.CreateFolder("Assets/GameAssets/Animations/" + parsedWords[0], parsedWords[1]);
+            }
+            AssetDatabase.CreateFolder("Assets/GameAssets/Animations/" + parsedWords[0] + "/" + parsedWords[1], parsedWords[2]);
         }
 
-        AssetDatabase.MoveAsset(texturePath, "Assets/GameAssets/Textures/" + parsedWords[0] + "/" + parsedWords[1] + "/" + parsedWords[0] + "_" + parsedWords[1] + "_" + parsedWords[2] + ".png");
-
-// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%            GAP                  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-        // Build out Animations folders if they don't exist
-
-        if (!AssetDatabase.IsValidFolder("Assets/GameAssets/Animations"))
-        {
-            AssetDatabase.CreateFolder("Assets/GameAssets", "Animations");
-        }
-
-        if (!AssetDatabase.IsValidFolder("Assets/GameAssets/Animations/" + parsedWords[0]))
-        {
-            AssetDatabase.CreateFolder("Assets/GameAssets/Animations", parsedWords[0]);
-        }
-
-        if (!AssetDatabase.IsValidFolder("Assets/GameAssets/Animations/" + parsedWords[0] + "/" + parsedWords[1]))
-        { 
-            string assFolderMap = AssetDatabase.CreateFolder("Assets/GameAssets/Animations/" + parsedWords[0], parsedWords[1]);
-        }
 
         // Create a new animation and mod the settings
         AnimationClip animation = new AnimationClip();
-        animation.name = parsedWords[1] + "_" + parsedWords[2];
+        animation.name = parsedWords[2] + "_" + parsedWords[3] + "_" + parsedWords[4];
         animation.frameRate = framerate;
 
         EditorCurveBinding spriteBinding = new EditorCurveBinding();
@@ -119,10 +126,11 @@ public class ImportBodyPart {
         }
         AnimationUtility.SetObjectReferenceCurve(animation, spriteBinding, spriteKeyFrames);    
 
-        RuntimeAnimatorController controller = UnityEditor.Animations.AnimatorController.CreateAnimatorControllerAtPathWithClip("Assets/GameAssets/Animations/" + parsedWords[0] + "/" + parsedWords[1] + "/" + parsedWords[1] + "_" + parsedWords[2] + "_control.controller", animation);
-        AssetDatabase.CreateAsset(animation, "Assets/GameAssets/Animations/" + parsedWords[0] + "/" + parsedWords[1] + "/" + parsedWords[1] + "_" + parsedWords[2] + "_anim.anim");
-        // Build a GameObject to house these things, later to use as a prefab
-        GameObject objectToBuild = new GameObject ();
+        RuntimeAnimatorController controller = UnityEditor.Animations.AnimatorController.CreateAnimatorControllerAtPathWithClip("Assets/GameAssets/Animations/" + parsedWords[0] + "/" + parsedWords[1] + "/" + parsedWords[2] + "/" + parsedWords[2] + "_" + parsedWords[3] + "_" + parsedWords[4] + "_control.controller", animation);
+        AssetDatabase.CreateAsset(animation, "Assets/GameAssets/Animations/" + parsedWords[0] + "/" + parsedWords[1] + "/" + parsedWords[2] + "/" + parsedWords[2] + "_" + parsedWords[3] + "_" + parsedWords[4] + "_anim.anim");
+    
+    // Build a GameObject to house these things, later to use as a prefab
+        GameObject objectToBuild = new GameObject();
         objectToBuild.name = parsedWords[0] + "_" + parsedWords[1] + "_" + parsedWords[2];
 
         // Add one of the sprites as the placeholder sprite.
@@ -150,32 +158,16 @@ public class ImportBodyPart {
             string preFolderMap = AssetDatabase.CreateFolder("Assets/GameAssets/Prefabs/" + parsedWords[0], parsedWords[1]);
         }
 
-        // Attach bodypart Class labelling to component
-        switch (parsedWords[0])
+        if (Addressables.LoadResourceLocationsAsync("Assets/GameAssets/Prefabs/" + parsedWords[0] + "/" + parsedWords[1] + "/" + parsedWords[0] + "_" + parsedWords[1] + "_" + parsedWords[2] + ".prefab", GameObject))
         {
-            case "head":
-                objectToBuild.AddComponent<Head>();
-                break;
-            case "body":
-                objectToBuild.AddComponent<Body>();
-                break;
-            case "handFront":
-                objectToBuild.AddComponent<HandFront>();
-                break;
-            case "handBack":
-                objectToBuild.AddComponent<HandBack>();
-                break;
-            default:
-                Debug.Log("NOT RECOGNISED: ALEEEEEEERRRTT");
-                break;
+            Console.WriteLine(File.Exists(curFile) ? "File exists." : "File does not exist.");
         }
-
-
-        GameObject prefab = PrefabUtility.SaveAsPrefabAssetAndConnect(objectToBuild, "Assets/GameAssets/Prefabs/" + parsedWords[0] + "/" + parsedWords[1] + "/" + parsedWords[0] + "_" + parsedWords[1] + "_" + parsedWords[2] + ".prefab", InteractionMode.UserAction);
-    
+        else
+        {
+            GameObject prefab = PrefabUtility.SaveAsPrefabAssetAndConnect(objectToBuild, "Assets/GameAssets/Prefabs/" + parsedWords[0] + "/" + parsedWords[1] + "/" + parsedWords[0] + "_" + parsedWords[1] + "_" + parsedWords[2] + ".prefab", InteractionMode.UserAction);
+        }
         // Remove the GameObject and Original Raws and leave the Prefab and processed files
         Undo.DestroyObjectImmediate(objectToBuild);
 
-        AssetDatabase.DeleteAsset(texturePath);
     }
 }
